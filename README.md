@@ -1,3 +1,29 @@
+[Exchange Rates API](https://exchangeratesapi.io/documentation/)
+API Key: 4c5332bdea8e4356351e0e2e884a5a81
+API Request: 
+```
+https://api.exchangeratesapi.io/v1/latest
+    ? access_key = API_KEY
+    & base = GBP
+    & symbols = USD,CAD,EUR
+```
+API Response: 
+```json
+{
+    "success": true,
+    "historical": true,
+    "date": "2013-12-24",
+    "timestamp": 1387929599,
+    "base": "GBP",
+    "rates": {
+        "USD": 1.636492,
+        "EUR": 1.196476,
+        "CAD": 1.739516
+    }
+}
+```
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
