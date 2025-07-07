@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Exchange Rate Viewer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+
+    .box {
+      margin: 1rem 0;
+    }
+
+    button {
+      margin-right: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>JPY → Currency Rates</h1>
+
+  <!-- Feature 1 -->
+  <div class="box">
+    <select id="currency">
+      <option value="USD">USD</option>
+      <option value="VND">VND</option>
+      <option value="PHP">PHP</option>
+      <option value="IDR">IDR</option>
+      <option value="CAD">CAD</option>
+      <option value="SGD">SGD</option>
+    </select>
+    <button id="fetchBtn">Get Rate</button>
+    <span id="rateDisplay"></span>
+  </div>
+
+  <!-- Feature 2 -->
+  <div class="box">
+    <button id="saveBtn" disabled>Save This Rate</button>
+    <span id="saveStatus"></span>
+  </div>
+
+  <!-- Feature 3 -->
+  <div class="box">
+    <button id="historyBtn">Show History</button>
+    <ul id="historyList"></ul>
+  </div>
+
+<script>
+  const rateDisplay  = document.getElementById('rateDisplay');
+  const saveBtn      = document.getElementById('saveBtn');
+  const saveStatus   = document.getElementById('saveStatus');
+  let currentEntry;
+
+  async function loadRate() {
+    const to = document.getElementById('currency').value;
+    try {
+      // 1) Fetch live rate from your Express API
+      const res1  = await fetch(`/api/rate?to=${to}`);
+      const data1 = await res1.json();
+      if (data1.error) throw new Error(data1.error);
+
+      // 2) Persist it immediately
+      const res2 = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(data1)
+      });
+      const saveResult = await res2.json();
+      if (!saveResult.success) {
+        throw new Error(saveResult.error || 'Save failed');
+      }
+
+      // 3) Reload the very last saved entry
+      const res3     = await fetch('/api/history');
+      const history  = await res3.json();
+      const last     = history[history.length - 1];
+
+      // 4) Update UI from the saved JSON entry
+      rateDisplay.textContent =
+        `1 ${last.from} = ${last.rate.toFixed(6)} ${last.to} ` +
+        `(saved at ${new Date(last.timestamp).toLocaleTimeString()})`;
+      currentEntry   = last;
+      saveBtn.disabled = false;
+      saveStatus.textContent = '✅ Live rate fetched & saved!';
+    } catch (err) {
+      rateDisplay.textContent = `Error: ${err.message}`;
+      saveBtn.disabled = true;
+      saveStatus.textContent = '';
+    }
+  }
+
+  document.getElementById('fetchBtn').onclick = loadRate;
+</script>
+
+
+
+</body>
+
+</html>
